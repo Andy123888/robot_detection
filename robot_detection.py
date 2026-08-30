@@ -1,7 +1,6 @@
 import cv2
 import csv
 import json
-import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -170,6 +169,7 @@ def main():
 
     bottle_frames = 0
     mouse_frames = 0
+    empty_frames = 0
 
     STABLE_FRAMES = 3
 
@@ -183,6 +183,7 @@ def main():
     print("B : 记录一次 bottle 测试")
     print("M : 记录一次 mouse 测试")
     print("A : 记录一次 bottle + mouse 同时测试")
+    print("N : 记录一次 none 空画面测试")
     print("==============================")
     print()
 
@@ -263,26 +264,50 @@ def main():
             else:
                 mouse_frames = 0
 
+            if bottle_conf == 0.0 and mouse_conf == 0.0:
+                empty_frames += 1
+            else:
+                empty_frames = 0    
+
             bottle_detected = bottle_frames >= STABLE_FRAMES
             mouse_detected = mouse_frames >= STABLE_FRAMES
+            empty_detected = empty_frames >= STABLE_FRAMES
 
             both_detected = (
                 bottle_detected
                 and mouse_detected
-            ) 
+            )
 
             detected_classes = []
+
             if bottle_detected:
                 detected_classes.append("bottle")
+
             if mouse_detected:
                 detected_classes.append("mouse")
 
-            detected_class_text = (
-                "+".join(detected_classes)
-                if detected_classes
-                else "NOT_DETECTED"
-            )
+            if both_detected:
 
+                scene_state = "bottle+mouse"
+
+            elif bottle_detected:
+
+                scene_state = "bottle"
+
+            elif mouse_detected:
+
+                scene_state = "mouse"
+
+            elif empty_detected:
+
+                scene_state = "none"
+
+            else:
+
+                scene_state = "unstable"
+
+
+            detected_class_text = scene_state
             
 
             # FPS
@@ -351,6 +376,14 @@ def main():
             )
             both_text = "Both: YES" if both_detected else "Both: NO"
 
+            empty_text = (
+                "Empty: YES"
+                if empty_detected
+                else "Empty: NO"
+            )
+
+            scene_text = f"Scene: {scene_state.upper()}"
+
             cv2.putText(
                 display,
                 bottle_text,
@@ -381,13 +414,38 @@ def main():
                 2
             )
 
+            cv2.putText(
+                display,
+                empty_text,
+                (20, 195),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.65,
+                (255, 255, 255),
+                2
+            )
+
+            cv2.putText(
+                display,
+                scene_text,
+                (20, 225),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.65,
+                (0, 255, 255),
+                2
+            )
+
             # ROS2 publication
             ros_data = {
                 "fps": round(smooth_fps, 2),
                 "bottle_detected": bottle_detected,
                 "mouse_detected": mouse_detected,
                 "both_detected": both_detected,
+                "empty_detected": empty_detected,
+
+                "scene_state": scene_state,
+
                 "detected_classes": detected_classes,
+
                 "detections": []
             }
 
@@ -488,11 +546,13 @@ def main():
             # B：bottle test
             # M：mouse test
             # A: bottle + mouse
+            # N：none / empty 
             # --------------------------
             elif key in [
                 ord("b"),
                 ord("m"),
-                ord("a")
+                ord("a")，
+                ord("n")
             ]:
                 
                 if test_count >= 20:
@@ -502,16 +562,36 @@ def main():
                 test_count += 1
 
                 if key == ord("b"):
+
                     expected_class = "bottle"
-                    correct = bottle_detected and not mouse_detected
+
+                    correct = (
+                        bottle_detected
+                        and not mouse_detected
+                        and not empty_detected
+                    )
 
                 elif key == ord("m"):
-                    expected_class = "mouse"
-                    correct = mouse_detected and not bottle_detected
 
-                else:
+                    expected_class = "mouse"
+
+                    correct = (
+                        mouse_detected
+                        and not bottle_detected
+                        and not empty_detected
+                    )
+
+                elif key == ord("a"):
+
                     expected_class = "bottle+mouse"
+
                     correct = both_detected
+                
+                else:
+
+                    expected_class = "none"
+
+                    correct = empty_detected
 
                 if correct:
                     correct_count += 1
