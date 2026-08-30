@@ -551,7 +551,7 @@ def main():
             elif key in [
                 ord("b"),
                 ord("m"),
-                ord("a")，
+                ord("a"),
                 ord("n")
             ]:
                 
