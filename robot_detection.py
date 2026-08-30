@@ -491,7 +491,7 @@ def main():
                 test_writer.writerow([
                     test_count,
                     expected_class,
-                    detected_class_text,,
+                    detected_class_text,
                     round(bottle_conf, 4),
                     round(mouse_conf, 4),
                     correct
