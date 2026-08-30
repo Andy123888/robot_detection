@@ -24,7 +24,7 @@ CAMERA_ID = 0
 PREDICT_CONF = 0.25
 
 BOTTLE_CONF = 0.50
-MOUSE_CONF = 0.55
+MOUSE_CONF = 0.60
 
 IMG_SIZE = 640
 
@@ -171,7 +171,7 @@ def main():
     mouse_frames = 0
     empty_frames = 0
 
-    STABLE_FRAMES = 3
+    STABLE_FRAMES = 5
 
     print()
     print("==============================")
@@ -334,8 +334,37 @@ def main():
                 )
 
 
-            # YOLO自动画框
-            display = result.plot()
+            display = frame.copy()
+
+            for det in detections:
+
+                x1, y1, x2, y2 = det["bbox"]
+
+                class_name = det["class"]
+                confidence = det["confidence"]
+
+                cv2.rectangle(
+                    display,
+                    (x1, y1),
+                    (x2, y2),
+                    (0, 255, 0),
+                    2
+                )
+
+                label = (
+                    f"{class_name} "
+                    f"{confidence:.2f}"
+                )
+
+                cv2.putText(
+                    display,
+                    label,
+                    (x1, max(y1 - 10, 20)),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6,
+                    (0, 255, 0),
+                    2
+                )
 
             cv2.putText(
                 display,
