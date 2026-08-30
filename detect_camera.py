@@ -2,6 +2,7 @@ import time
 import cv2
 from ultralytics import YOLO
 
+# initial
 MODEL_PATH = "best.engine"
 CAMERA_ID = 0
 IMG_SIZE = 640
