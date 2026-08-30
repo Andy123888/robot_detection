@@ -22,7 +22,11 @@ ERROR_DIR = RESULT_DIR / "errors"
 
 CAMERA_ID = 0
 
-CONF = 0.50
+PREDICT_CONF = 0.25
+
+BOTTLE_CONF = 0.50
+MOUSE_CONF = 0.55
+
 IMG_SIZE = 640
 
 RESULT_DIR.mkdir(parents=True, exist_ok=True)
@@ -154,7 +158,8 @@ def main():
         "test_number",
         "expected_class",
         "detected_class",
-        "confidence",
+        "bottle_confidence",
+        "mouse_confidence",
         "correct"
     ])
 
@@ -162,6 +167,11 @@ def main():
     correct_count = 0
 
     smooth_fps = 0.0
+
+    bottle_frames = 0
+    mouse_frames = 0
+
+    STABLE_FRAMES = 3
 
     print()
     print("==============================")
@@ -192,7 +202,7 @@ def main():
             results = model.predict(
                 source=frame,
                 imgsz=IMG_SIZE,
-                conf=CONF,
+                conf=PREDICT_CONF,
                 verbose=False
             )
 
@@ -221,6 +231,12 @@ def main():
                         model.names[class_id]
                     )
 
+                    if class_name == "bottle" and confidence < BOTTLE_CONF:
+                        continue
+
+                    if class_name == "mouse" and confidence < MOUSE_CONF:
+                        continue
+
                     detections.append({
                         "class_id": class_id,
                         "class": class_name,
@@ -237,9 +253,23 @@ def main():
             bottle_conf = best_confidence(detections, "bottle")
             mouse_conf = best_confidence(detections, "mouse")
 
-            bottle_detected = bottle_conf > 0.0
-            mouse_detected = mouse_conf > 0.0
-            both_detected = bottle_detected and mouse_detected
+            if bottle_conf > 0.0:
+                bottle_frames += 1
+            else:
+                bottle_frames = 0
+
+            if mouse_conf > 0.0:
+                mouse_frames += 1
+            else:
+                mouse_frames = 0
+
+            bottle_detected = bottle_frames >= STABLE_FRAMES
+            mouse_detected = mouse_frames >= STABLE_FRAMES
+
+            both_detected = (
+                bottle_detected
+                and mouse_detected
+            ) 
 
             detected_classes = []
             if bottle_detected:
@@ -465,6 +495,10 @@ def main():
                 ord("a")
             ]:
                 
+                if test_count >= 20:
+                    print("20次测试已经完成，不再记录新的测试。")
+                    continue
+
                 test_count += 1
 
                 if key == ord("b"):
