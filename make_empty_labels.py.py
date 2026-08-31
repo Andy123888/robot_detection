@@ -1,7 +1,7 @@
 from pathlib import Path
 
-IMG_DIR = Path(r"D:\others\robot_detection\raw\images")
-LBL_DIR = Path(r"D:\others\robot_detection\raw\labels")
+IMG_DIR = Path(r"D:\others\robot_detection\new70\images")
+LBL_DIR = Path(r"D:\others\robot_detection\new70\labels")
 
 IMG_EXTS = {".jpg", ".jpeg", ".png", ".JPG", ".JPEG", ".PNG"}
 

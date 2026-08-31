@@ -180,7 +180,7 @@ def main():
 
     print()
     print("==============================")
-    print("YOLO + ROS2 实时检测已启动")
+    print("YOLO+ROS2实时检测已启动")
     print("==============================")
     print("Q : 退出")
     print("S : 保存正确案例")
@@ -292,29 +292,22 @@ def main():
                 detected_classes.append("mouse")
 
             if both_detected:
-
                 scene_state = "bottle+mouse"
 
             elif bottle_detected:
-
                 scene_state = "bottle"
 
             elif mouse_detected:
-
                 scene_state = "mouse"
 
             elif empty_detected:
-
                 scene_state = "none"
 
             else:
-
                 scene_state = "unstable"
-
 
             detected_class_text = scene_state
             
-
             # FPS
             elapsed = (
                 time.perf_counter()
@@ -328,11 +321,9 @@ def main():
             )
 
             if smooth_fps == 0:
-
                 smooth_fps = fps_now
 
             else:
-
                 smooth_fps = (
                     0.90 * smooth_fps
                     + 0.10 * fps_now
@@ -531,7 +522,6 @@ def main():
 
             # Q：Exit
             if key == ord("q"):
-
                 break
 
             # --------------------------
@@ -688,17 +678,11 @@ def main():
     finally:
 
         cap.release()
-
         video_writer.release()
-
         log_file.close()
-
         test_file.close()
-
         cv2.destroyAllWindows()
-
         node.destroy_node()
-
         rclpy.shutdown()
 
         print()
