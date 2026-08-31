@@ -77,7 +77,7 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
     cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-    cap.set(cv2.CAP_PROP_EXPOSURE, 50)
+    cap.set(cv2.CAP_PROP_EXPOSURE, 40)
 
     if not cap.isOpened():
 
