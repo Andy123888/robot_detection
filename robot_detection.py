@@ -38,18 +38,9 @@ ERROR_DIR.mkdir(parents=True, exist_ok=True)
 class YoloNode(Node):
 
     def __init__(self):
-
         super().__init__("yolo_detection_node")
-
-        self.publisher = self.create_publisher(
-            String,
-            "/yolo/detections",
-            10
-        )
-
-        self.get_logger().info(
-            "YOLO ROS2 node started."
-        )
+        self.publisher = self.create_publisher(String, "/yolo/detections", 10)
+        self.get_logger().info("YOLO ROS2 node started.")
 
 def best_confidence(detections, class_name):
     # Return the maximum confidence of the specified class in the current frame
@@ -663,24 +654,11 @@ def main():
 
                 if test_count == 20:
 
-                    print()
-                    print(
-                        "======================"
-                    )
-                    print(
-                        "20个目标测试完成"
-                    )
-                    print(
-                        f"正确数量："
-                        f"{correct_count}/20"
-                    )
-                    print(
-                        f"正确率："
-                        f"{accuracy:.1f}%"
-                    )
-                    print(
-                        "======================"
-                    )
+                    print("\n======================")
+                    print("20个目标测试完成")
+                    print(f"正确数量：{correct_count}/20")
+                    print(f"正确率：{accuracy:.1f}%")
+                    print("======================")
 
     finally:
         # 程序退出时释放摄像头、文件和ROS2资源
@@ -692,8 +670,7 @@ def main():
         node.destroy_node()
         rclpy.shutdown()
 
-        print()
-        print("程序已退出")
+        print("\n程序已退出")
         print("视频：", video_path)
         print("检测日志：", log_path)
         print("20次测试：", test_path)
