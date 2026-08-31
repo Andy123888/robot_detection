@@ -45,29 +45,18 @@ class YoloNode(Node):
 def best_confidence(detections, class_name):
     # Return the maximum confidence of the specified class in the current frame
     # return 0.0 if no detection is found.
-    values = [
-        det["confidence"]
-        for det in detections
-        if det["class"] == class_name
-    ]
+    values = [d["confidence"] for d in detections if d["class"] == class_name]
     return max(values) if values else 0.0
 
 def main():
-
     rclpy.init()
-
     node = YoloNode()
 
-    print("正在加载模型：")
-    print(MODEL_PATH)
-
+    print("正在加载模型：", MODEL_PATH)
     model = YOLO(str(MODEL_PATH))
-
-    print("\n模型类别：")
-    print(model.names)
+    print("\n模型类别：", model.names)
 
     cap = cv2.VideoCapture(CAMERA_ID)
-
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
@@ -76,36 +65,21 @@ def main():
     os.system("v4l2-ctl -d /dev/video0 -c exposure_time_absolute=466")
 
     if not cap.isOpened():
-
         print("摄像头打开失败")
         node.destroy_node()
         rclpy.shutdown()
         return
 
-    width = int(
-        cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    )
-
-    height = int(
-        cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    )
-
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     camera_fps = cap.get(cv2.CAP_PROP_FPS)
 
     if camera_fps <= 1:
         camera_fps = 20.0
 
-    timestamp = datetime.now().strftime(
-        "%Y%m%d_%H%M%S"
-    )
-
-    video_path = RESULT_DIR / (
-        f"demo_{timestamp}.mp4"
-    )
-
-    fourcc = cv2.VideoWriter_fourcc(
-        *"mp4v"
-    )
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    video_path = RESULT_DIR / (f"demo_{timestamp}.mp4")
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
 
     video_writer = cv2.VideoWriter(
         str(video_path),
@@ -115,9 +89,7 @@ def main():
     )
 
     # Detection Log
-    log_path = RESULT_DIR / (
-        f"detection_log_{timestamp}.csv"
-    )
+    log_path = RESULT_DIR / (f"detection_log_{timestamp}.csv")
 
     log_file = open(
         log_path,
@@ -128,16 +100,9 @@ def main():
 
     log_writer = csv.writer(log_file)
 
-    log_writer.writerow([
-        "time",
-        "fps",
-        "class",
-        "confidence",
-        "x1",
-        "y1",
-        "x2",
-        "y2"
-    ])
+    log_writer.writerow(
+        ["time", "fps", "class", "confidence", "x1", "y1", "x2", "y2"]
+    )
 
     test_path = RESULT_DIR / (
         f"test20_{timestamp}.csv"
@@ -153,12 +118,8 @@ def main():
     test_writer = csv.writer(test_file)
 
     test_writer.writerow([
-        "test_number",
-        "expected_class",
-        "detected_class",
-        "bottle_confidence",
-        "mouse_confidence",
-        "correct"
+        "test_number","expected_class","detected_class",
+        "bottle_confidence","mouse_confidence","correct"
     ])
 
     test_count = 0
@@ -189,15 +150,11 @@ def main():
     try:
 
         while True:
-
             start_time = time.perf_counter()
-
             ret, frame = cap.read()
-
             if not ret:
                 print("读取摄像头失败")
                 break
-
 
             # 将当前摄像头画面送入YOLO进行目标检测
             results = model.predict(
@@ -212,30 +169,15 @@ def main():
             detections = []
 
             if result.boxes is not None:
-
                 for box in result.boxes:
-
-                    class_id = int(
-                        box.cls[0].item()
-                    )
-
-                    confidence = float(
-                        box.conf[0].item()
-                    )
-
-                    x1, y1, x2, y2 = [
-                        int(v)
-                        for v in box.xyxy[0].tolist()
-                    ]
-
-                    class_name = str(
-                        model.names[class_id]
-                    )
+                    class_id = int(box.cls[0].item())
+                    confidence = float(box.conf[0].item())
+                    x1, y1, x2, y2 = [int(v)for v in box.xyxy[0].tolist()]
+                    class_name = str(model.names[class_id])
 
                      # 根据类别设置不同阈值，过滤低置信度误检
                     if class_name == "bottle" and confidence < BOTTLE_CONF:
                         continue
-
                     if class_name == "mouse" and confidence < MOUSE_CONF:
                         continue
 
@@ -243,12 +185,7 @@ def main():
                         "class_id": class_id,
                         "class": class_name,
                         "confidence": confidence,
-                        "bbox": [
-                            x1,
-                            y1,
-                            x2,
-                            y2
-                        ]
+                        "bbox": [x1,y1,x2,y2]
                     })
             
             # Added: Judge bottle / mouse simultaneously
@@ -285,22 +222,16 @@ def main():
 
             if bottle_detected:
                 detected_classes.append("bottle")
-
             if mouse_detected:
                 detected_classes.append("mouse")
-
             if both_detected:
                 scene_state = "bottle+mouse"
-
             elif bottle_detected:
                 scene_state = "bottle"
-
             elif mouse_detected:
                 scene_state = "mouse"
-
             elif empty_detected:
                 scene_state = "none"
-
             else:
                 scene_state = "unstable"
 
@@ -311,32 +242,22 @@ def main():
                 time.perf_counter()
                 - start_time
             )
-
-            fps_now = (
-                1.0 / elapsed
-                if elapsed > 0
-                else 0.0
-            )
-
+            fps_now = 1.0 / elapsed if elapsed > 0 else 0.0
             if smooth_fps == 0:
                 smooth_fps = fps_now
-
             else:
                 smooth_fps = (
                     0.90 * smooth_fps
                     + 0.10 * fps_now
                 )
 
-            
             display = frame.copy()
 
             for det in detections:
-
                 x1, y1, x2, y2 = det["bbox"]
 
                 class_name = det["class"]
                 confidence = det["confidence"]
-
                 cv2.rectangle(
                     display,
                     (x1, y1),
@@ -344,12 +265,10 @@ def main():
                     (0, 255, 0),
                     2
                 )
-
                 label = (
                     f"{class_name} "
                     f"{confidence:.2f}"
                 )
-
                 cv2.putText(
                     display,
                     label,
@@ -370,11 +289,7 @@ def main():
                 2
             )
 
-            accuracy = (
-                correct_count / test_count * 100
-                if test_count > 0
-                else 0
-            )
+            accuracy = correct_count / test_count * 100 if test_count else 0
 
             cv2.putText(
                 display,
