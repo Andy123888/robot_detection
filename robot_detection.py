@@ -12,7 +12,6 @@ from std_msgs.msg import String
 
 from ultralytics import YOLO
 
-
 HOME = Path.home()
 
 # TensorRT模型路径
@@ -92,10 +91,7 @@ def main():
     log_path = RESULT_DIR / (f"detection_log_{timestamp}.csv")
 
     log_file = open(
-        log_path,
-        "w",
-        newline="",
-        encoding="utf-8-sig"
+        log_path,"w",newline="",encoding="utf-8-sig"
     )
 
     log_writer = csv.writer(log_file)
@@ -109,10 +105,7 @@ def main():
     )
 
     test_file = open(
-        test_path,
-        "w",
-        newline="",
-        encoding="utf-8-sig"
+        test_path,"w",newline="",encoding="utf-8-sig"
     )
 
     test_writer = csv.writer(test_file)
@@ -247,8 +240,7 @@ def main():
                 smooth_fps = fps_now
             else:
                 smooth_fps = (
-                    0.90 * smooth_fps
-                    + 0.10 * fps_now
+                    0.90 * smooth_fps + 0.10 * fps_now
                 )
 
             display = frame.copy()
