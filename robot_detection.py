@@ -15,6 +15,7 @@ from ultralytics import YOLO
 
 HOME = Path.home()
 
+# TensorRT模型路径
 MODEL_PATH = HOME / "robot_project/model/best.engine"
 
 RESULT_DIR = HOME / "robot_project/results"
@@ -22,6 +23,7 @@ ERROR_DIR = RESULT_DIR / "errors"
 
 CAMERA_ID = 0
 
+# YOLO基础检测阈值
 PREDICT_CONF = 0.25
 
 BOTTLE_CONF = 0.50
@@ -32,6 +34,7 @@ IMG_SIZE = 640
 RESULT_DIR.mkdir(parents=True, exist_ok=True)
 ERROR_DIR.mkdir(parents=True, exist_ok=True)
 
+# ROS2节点
 class YoloNode(Node):
 
     def __init__(self):
@@ -205,6 +208,7 @@ def main():
                 break
 
 
+            # 将当前摄像头画面送入YOLO进行目标检测
             results = model.predict(
                 source=frame,
                 imgsz=IMG_SIZE,
@@ -237,6 +241,7 @@ def main():
                         model.names[class_id]
                     )
 
+                     # 根据类别设置不同阈值，过滤低置信度误检
                     if class_name == "bottle" and confidence < BOTTLE_CONF:
                         continue
 
@@ -259,6 +264,7 @@ def main():
             bottle_conf = best_confidence(detections, "bottle")
             mouse_conf = best_confidence(detections, "mouse")
 
+            # 连续多帧检测到目标
             if bottle_conf > 0.0:
                 bottle_frames += 1
             else:
@@ -278,6 +284,7 @@ def main():
             mouse_detected = mouse_frames >= STABLE_FRAMES
             empty_detected = empty_frames >= STABLE_FRAMES
 
+            # 两个类别都稳定检测到时为同时出现
             both_detected = (
                 bottle_detected
                 and mouse_detected
@@ -308,7 +315,7 @@ def main():
 
             detected_class_text = scene_state
             
-            # FPS
+            # Calculate and smooth the FPS
             elapsed = (
                 time.perf_counter()
                 - start_time
@@ -329,7 +336,7 @@ def main():
                     + 0.10 * fps_now
                 )
 
-
+            
             display = frame.copy()
 
             for det in detections:
@@ -676,7 +683,7 @@ def main():
                     )
 
     finally:
-
+        # 程序退出时释放摄像头、文件和ROS2资源
         cap.release()
         video_writer.release()
         log_file.close()
