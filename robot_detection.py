@@ -1,6 +1,7 @@
 import cv2
 import csv
 import json
+import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -76,8 +77,9 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-    cap.set(cv2.CAP_PROP_EXPOSURE, 40)
+    # USB Camera Exposure Settings
+    os.system("v4l2-ctl -d /dev/video0 -c auto_exposure=1")
+    os.system("v4l2-ctl -d /dev/video0 -c exposure_time_absolute=466")
 
     if not cap.isOpened():
 
