@@ -418,18 +418,12 @@ def main():
 
             node.publisher.publish(msg)
 
-            rclpy.spin_once(
-                node,
-                timeout_sec=0
-            )
+            rclpy.spin_once(node,timeout_sec=0)
 
 
             video_writer.write(display)
 
-            cv2.imshow(
-                "Jetson YOLO ROS2 Detection",
-                display
-            )
+            cv2.imshow("Jetson YOLO ROS2 Detection",display)
 
             key = cv2.waitKey(1) & 0xFF
 
@@ -448,15 +442,8 @@ def main():
                     )
                 )
 
-                cv2.imwrite(
-                    str(save_path),
-                    display
-                )
-
-                print(
-                    "已保存正确案例：",
-                    save_path
-                )
+                cv2.imwrite(str(save_path),display)
+                print("已保存正确案例：",save_path)
 
             # --------------------------
             # E：Error Case
@@ -486,10 +473,7 @@ def main():
             # N：none / empty 
             # --------------------------
             elif key in [
-                ord("b"),
-                ord("m"),
-                ord("a"),
-                ord("n")
+                ord("b"),ord("m"),ord("a"),ord("n")
             ]:
                 
                 if test_count >= 20:
@@ -499,9 +483,7 @@ def main():
                 test_count += 1
 
                 if key == ord("b"):
-
                     expected_class = "bottle"
-
                     correct = (
                         bottle_detected
                         and not mouse_detected
@@ -509,9 +491,7 @@ def main():
                     )
 
                 elif key == ord("m"):
-
                     expected_class = "mouse"
-
                     correct = (
                         mouse_detected
                         and not bottle_detected
@@ -519,15 +499,11 @@ def main():
                     )
 
                 elif key == ord("a"):
-
                     expected_class = "bottle+mouse"
-
                     correct = both_detected
                 
                 else:
-
                     expected_class = "none"
-
                     correct = empty_detected
 
                 if correct:
@@ -568,7 +544,6 @@ def main():
                 )
 
                 if test_count == 20:
-
                     print("\n======================")
                     print("20个目标测试完成")
                     print(f"正确数量：{correct_count}/20")
